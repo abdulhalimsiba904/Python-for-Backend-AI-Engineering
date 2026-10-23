@@ -1,0 +1,3 @@
+Daily Transaction Report
+Total transactions: 3
+Total amount: 225.00
