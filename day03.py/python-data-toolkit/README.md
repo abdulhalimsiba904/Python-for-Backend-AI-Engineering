@@ -65,6 +65,19 @@ The default input file is `samples/transactions.json`.
 
 ## Running Tests
 
+Run the complete suite from the toolkit project folder, even in a fresh
+terminal without setting `PYTHONPATH`:
+
+```powershell
+python run_day5_tests.py
+python run_day5_tests.py test_day5.py
+```
+
+The runner locates `src` automatically. It runs the original reader,
+transformer, report and duplicate-ID tests, the smoke checks, and the Day 5
+validation, logging, CLI and runner regression tests. Tests use functions and
+plain assertions; no third-party test framework is required.
+
 Run the test scripts individually:
 
 ```powershell
@@ -75,6 +88,8 @@ python tests/test_validators.py
 ```
 
 Each test script uses Python assertions to check expected behavior.
+The individual scripts and application commands still use the `PYTHONPATH`
+setting shown above.
 
 ## Sample Output
 
@@ -90,3 +105,29 @@ Duplicate IDs: set()
 ## Learning Objectives
 
 This project practices Python functions, modules, type hints, file handling, JSON and CSV processing, path management, data validation, exception handling, command-line arguments, and basic testing.
+
+## Day 5: Exceptions and Debugging
+
+Read [the full Day 5 lesson](DAY5_LESSON.md) for the three-hour curriculum,
+debugging issue log, commands, explanations and verified outputs.
+
+```powershell
+$env:PYTHONPATH = 'src'
+python day5_practicals.py
+python run_day5_tests.py test_day5.py
+python run_day5_tests.py
+python -m data_toolkit.cli samples/transactions.json --verbose
+python -m pdb day5_practicals.py
+```
+
+`--verbose` shows safe progress logs on standard error. Expected load failures
+produce a warning and an actionable error; successful default reports retain
+their Day 4 output. Amount validation rejects Booleans and non-finite numbers,
+keeps zero and finite negative refunds, and reports record numbers instead of
+echoing private IDs or invalid values. No additional dependencies are required.
+
+The practicals cover `try`/`except`/`else`/`finally`, deliberate `raise`,
+traceback investigation and debugger inspection. Type hints document expected
+inputs and results, including `float | None`; runtime checks still validate
+external data. The full lesson includes symptom, root cause, fix and
+verification notes for the debugging exercises.
