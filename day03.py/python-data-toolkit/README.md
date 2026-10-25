@@ -131,3 +131,71 @@ traceback investigation and debugger inspection. Type hints document expected
 inputs and results, including `float | None`; runtime checks still validate
 external data. The full lesson includes symptom, root cause, fix and
 verification notes for the debugging exercises.
+
+## Day 6: Object-Oriented Programming, Git, and Clean Code
+
+`DocumentRecord` keeps one input document's identity, filename, format, status,
+and independent validation-error list together. Methods demonstrate initialization,
+instance state, and controlled status changes. Readers, transformations,
+validators, and reports remain functions; there is no inheritance hierarchy.
+
+New files include `src/data_toolkit/models.py`,
+`src/data_toolkit/processing.py`, `document_record_demo.py`,
+`tests/test_models.py`, and `tests/test_processing.py`.
+
+The record accepts PDF, CSV, JSON, and TXT **metadata**; the transaction pipeline
+still reads JSON and CSV only. Normal status progression is pending, processing,
+completed. A recorded error makes the record failed. Create a new record for a
+retry. Caller-supplied identifiers must be nonblank strings; callers manage
+uniqueness, and the integration demo uses UUIDs.
+
+```python
+from data_toolkit.models import DocumentRecord
+
+record = DocumentRecord("DOC-001", "transactions.json", "json")
+record.mark_processing()
+record.mark_completed()
+print(record.get_summary())
+# DOC-001 | transactions.json | JSON | completed | errors: 0
+```
+
+That example demonstrates the lifecycle only; it does not open a file. The demo
+also calls `process_document(record, path)` to read and normalize actual JSON/CSV
+samples with the existing toolkit functions, then calculate reports. Expected
+input errors mark the record failed with a safe stored message and re-raise the
+original exception. The existing CLI keeps its arguments, report text, and logging.
+
+From the toolkit folder in PowerShell:
+
+```powershell
+python document_record_demo.py
+python run_day5_tests.py test_models.py
+python run_day5_tests.py test_processing.py
+python run_day5_tests.py
+$env:PYTHONPATH = 'src'
+python -m data_toolkit.cli samples/transactions.json
+python -m data_toolkit.cli samples/transactions.csv
+```
+
+The demo finds `src` itself, as does the existing test runner. The full suite now
+runs **50 test functions plus 5 original smoke checks**. It includes exact CLI
+output checks and all previous regression tests. No new dependencies are needed.
+
+If `python` is unavailable in your terminal, the verification session used:
+
+```powershell
+$py = 'C:\Users\USER\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe'
+& $py --version  # Python 3.12.14 in the verification session
+& $py document_record_demo.py
+& $py run_day5_tests.py
+```
+
+Use `& $py` in place of `python` in the other commands when necessary. Python
+3.12.10 was not available to this execution session; no local environment was
+recreated. See [Day 6 design decisions](DAY6_DESIGN_DECISIONS.md) and
+[Day 6 practical notes](DAY6_PRACTICAL_NOTES.md) for the lifecycle rules,
+encapsulation limits, implementation details, actual results, and Git workflow.
+
+Day 6 work stays on `feature/day6-oop-clean-code` as local commits. Review staged
+diffs and stage exact filenames. Do not include secrets, generated output, local
+environments, or the unrelated `rc` file. Pushing or merging requires approval.

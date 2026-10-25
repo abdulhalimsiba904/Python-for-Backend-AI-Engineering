@@ -2,30 +2,13 @@
 import argparse
 import json
 import logging
-from pathlib import Path
 from uuid import uuid4
 
-from data_toolkit.readers import read_csv, read_json
+from data_toolkit.processing import load_transactions
 from data_toolkit.reports import calculate_average, count_categories
-from data_toolkit.transformers import normalize_transactions
 from data_toolkit.validators import find_duplicate_ids
 
 logger = logging.getLogger(__name__)
-
-
-def load_transactions(file_path: str | Path) -> list[dict]:
-    """Load transactions from a supported file and normalize their data."""
-    path = Path(file_path)
-    suffix = path.suffix.lower()
-
-    if suffix == ".json":
-        transactions = read_json(path)
-    elif suffix == ".csv":
-        transactions = read_csv(path)
-    else:
-        raise ValueError("Unsupported file format. Use a .json or .csv file.")
-
-    return normalize_transactions(transactions)
 
 
 def main() -> None:

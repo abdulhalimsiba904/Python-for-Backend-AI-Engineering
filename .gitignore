@@ -3,3 +3,17 @@ __pycache__/
 *.py[cod]
 .env
 .vscode/
+
+# Local environments and private environment-file variants
+venv/
+.env.*
+!.env.example
+
+# Logs and newly generated toolkit outputs (tracked exports stay tracked)
+*.log
+day03.py/python-data-toolkit/output/
+day03.py/python-data-toolkit/custom_output/
+
+# Local Day 6 learning and design notes
+day03.py/python-data-toolkit/DAY6_DESIGN_DECISIONS.md
+day03.py/python-data-toolkit/DAY6_PRACTICAL_NOTES.md
