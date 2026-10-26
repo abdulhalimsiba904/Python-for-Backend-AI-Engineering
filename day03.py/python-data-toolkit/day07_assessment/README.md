@@ -60,7 +60,7 @@ Fatima (UDS003, 91), using `student_id`, `name`, and `score` keys.
 `invalid_students.json` deliberately contains malformed JSON (a trailing
 comma). `wrong_structure.json` deliberately contains a top-level object.
 
-The test command above runs both problems. For Problem 2 alone, run from
+The test command above runs all three problems. For Problem 2 alone, run from
 `day03.py/python-data-toolkit`:
 
 ```powershell
@@ -71,4 +71,38 @@ The eight new tests cover the sample records, an empty list, unchanged list
 contents and Unicode, a missing file, malformed JSON, an empty file, a top-level
 object, and other non-list values. They also check exception chaining.
 Temporary files are cleaned up automatically. Only the standard library is
-required. Problem 3 is not included.
+required.
+
+## Problem 3: Mobile Money Transaction Analyzer
+
+`transaction_analyzer.py` defines `count_transactions_by_category(transactions)`.
+It accepts a list of transaction dictionaries and returns a dictionary mapping
+normalized categories to transaction counts. An empty list returns `{}`.
+
+Each string category is stripped of leading and trailing whitespace and
+lowercased, so case variants count together. Missing categories, `None`,
+non-string values, empty strings, and whitespace-only strings are skipped.
+Internal spaces are preserved. The function does not change its input and
+supports arbitrary category names without hardcoded results.
+
+```python
+from transaction_analyzer import count_transactions_by_category
+
+transactions = [{"category": category} for category in
+                ["Food", "Transport", "food", "Bills", " transport ", "FOOD"]]
+count_transactions_by_category(transactions)
+# {"food": 3, "transport": 2, "bills": 1}
+```
+
+Run Problem 3 alone from `day03.py/python-data-toolkit`:
+
+```powershell
+python -m unittest discover -s day07_assessment -p test_transaction_analyzer.py -v
+```
+
+The 11 tests cover the sample, empty input, a single category, missing keys,
+empty and whitespace-only strings, `None` and other non-string values,
+tabs and newlines, arbitrary categories and internal spaces, mixed valid and
+invalid categories, preserving input, and independent calls. Only Python's
+standard library is required. The loop takes O(n) time for n transactions
+(plus string normalization) and O(k) extra space for k distinct categories.
