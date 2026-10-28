@@ -273,3 +273,22 @@ In VS Code open this toolkit folder, select the new environment with
 **Python: Select Interpreter**, then **Python: Configure Tests > pytest > tests**.
 Use the terminal's default `python -m pytest -q` command for all configured
 directories, including Day 7. Review changes manually before staging or pushing.
+
+
+## Day 9 Data Validation Transformation and Algorithmic Thinking
+
+The separate `data_toolkit.day09` package teaches a strict `transaction_id`,
+`category`, `amount` contract without changing earlier `id` pipelines.
+Read [Day 9 practical and policies](DAY9_PRACTICAL.md) for rules, expected output,
+complexity, errors, test coverage and Windows setup.
+
+```powershell
+python day9_practicals.py
+python -m pytest tests/day09 -v
+python -m pytest -q
+```
+
+Validation reports rejected rows; transformation creates canonical copies;
+statistics summarize accepted records. Numeric strings, Boolean amounts,
+nonpositive/nonfinite amounts and later duplicate IDs are rejected.
+No new dependencies are required beyond the existing pytest development entry.
