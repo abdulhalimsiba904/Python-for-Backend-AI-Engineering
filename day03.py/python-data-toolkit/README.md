@@ -36,7 +36,7 @@ python-data-toolkit/
 ## Requirements
 
 - Python 3.12 or a compatible Python version.
-- No third-party packages are currently required.
+- Runtime: standard library only. Development tests: pytest (requirements-dev.txt).
 
 ## Running the Toolkit
 
@@ -199,3 +199,77 @@ encapsulation limits, implementation details, actual results, and Git workflow.
 Day 6 work stays on `feature/day6-oop-clean-code` as local commits. Review staged
 diffs and stage exact filenames. Do not include secrets, generated output, local
 environments, or the unrelated `rc` file. Pushing or merging requires approval.
+
+
+## Day 8 Automated Testing with pytest
+
+Run commands from `C:\Users\USER\python-foundations\day03.py\python-data-toolkit`.
+Use a working Python 3.12 interpreter; do not delete an existing environment
+if its original interpreter is missing. The optional `.venv-day8` below is separate.
+
+```powershell
+python -m venv .venv-day8
+& .\.venv-day8\Scripts\python.exe -m pip install -r requirements-dev.txt
+& .\.venv-day8\Scripts\python.exe -m pytest -q
+& .\.venv-day8\Scripts\python.exe -m pytest tests/day08 -v
+& .\.venv-day8\Scripts\python.exe -m pytest --collect-only -q
+```
+
+If `python` is not on PATH, use a verified full interpreter path with PowerShell's
+`&` operator. For the bundled interpreter used in the Day 8 verification:
+
+```powershell
+$py = 'C:\Users\USER\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe'
+& $py --version
+# Prefer creating .venv-day8 with this interpreter, then use its python.exe above.
+& $py -m venv .venv-day8
+```
+
+`pytest.ini` supplies `src` and `day07_assessment` import paths during tests.
+The default suite includes all existing tests, Day 7 unittest tests and the
+original top-level smoke script (its assertions execute during collection).
+New pytest examples live under `tests/day08/` so the old no-dependency runner
+does not try to call fixture-dependent tests. The old runner and Day 7 unittest
+commands remain available. Run from this folder because older tests use relative
+sample paths. New file tests use `tmp_path` and never alter sample files.
+
+### Intended behavior before writing tests
+
+- `calculate_average([2, 4, 6]) == 4`; empty numeric list returns `None`.
+  Repeated numbers count separately; finite negative values and zero are valid;
+  the result is rounded to two decimal places. String or None elements in a
+  nonempty numeric list raise `TypeError`. This helper assumes numeric lists:
+  it is not a full input validator and does not reject Booleans itself.
+- Day 7 statistics count scores >= 50 as passing, retain repeated scores,
+  return zero total/count/pass/fail and None average/min/max for an empty list,
+  and do not change input. Mixed numeric/string elements raise `TypeError`.
+  Score-range and Boolean validation are outside this helper's current contract.
+- Transaction normalization requires nonblank string `id` and `category`, and
+  an amount convertible to a finite float. Missing fields, invalid amounts,
+  Booleans, NaN and infinity raise `ValueError`. Zero and refunds remain valid.
+  Extra fields and duplicate records are retained. Duplicate detection reports
+  repeated IDs as a set; it does not remove records. Input dictionaries are
+  copied at the top level; nested extra values are not promised deep copies.
+- Toolkit category counting expects normalized dictionaries with a category;
+  a missing category raises `KeyError`. Day 7's independent counter instead
+  skips missing, blank or non-string categories and normalizes case/outer spaces.
+- Malformed or empty JSON text raises `json.JSONDecodeError`; valid JSON of
+  the wrong shape raises `ValueError`; `[]` loads as an empty list. A missing
+  file raises `FileNotFoundError`. CSV missing required fields is rejected by
+  normalization. CSV parsing is not a strict detector of every malformed CSV.
+- `process_document` re-raises malformed JSON and marks its record failed with
+  a safe message. Successful JSON/CSV processing completes the record.
+
+Function-scoped fixtures provide fresh transaction data. Parametrization names
+independent cases; `pytest.raises` checks error conditions. Regression tests
+protect the earlier Boolean/non-finite validation and safe error reporting.
+These characterize existing behavior; no application behavior was changed.
+Tests passing after implementation is characterization, not a claim that this
+work was developed using TDD. Practice red-green-refactor in a separate scratch
+exercise before applying it to the next feature. Coverage measures execution,
+not whether assertions or requirements are correct.
+
+In VS Code open this toolkit folder, select the new environment with
+**Python: Select Interpreter**, then **Python: Configure Tests > pytest > tests**.
+Use the terminal's default `python -m pytest -q` command for all configured
+directories, including Day 7. Review changes manually before staging or pushing.

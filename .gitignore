@@ -17,3 +17,9 @@ day03.py/python-data-toolkit/custom_output/
 # Local Day 6 learning and design notes
 day03.py/python-data-toolkit/DAY6_DESIGN_DECISIONS.md
 day03.py/python-data-toolkit/DAY6_PRACTICAL_NOTES.md
+
+# Day 8 local test environment and generated test metadata
+.venv-day8/
+.pytest_cache/
+.coverage
+htmlcov/
