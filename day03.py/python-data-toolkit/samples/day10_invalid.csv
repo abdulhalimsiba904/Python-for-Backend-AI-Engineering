@@ -1,0 +1,4 @@
+transaction_id,amount,category
+T1,10,food
+T1,20,transport
+T3,-5,food

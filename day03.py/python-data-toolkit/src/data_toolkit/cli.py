@@ -11,7 +11,7 @@ from data_toolkit.validators import find_duplicate_ids
 logger = logging.getLogger(__name__)
 
 
-def main() -> None:
+def _legacy_main(argv=None) -> None:
     parser = argparse.ArgumentParser(
         description="Read transaction data and generate a summary."
     )
@@ -22,7 +22,7 @@ def main() -> None:
         help="Path to a JSON or CSV transaction file.",
     )
     parser.add_argument("--verbose", action="store_true", help="Show safe progress logs.")
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
     logging.basicConfig(level=logging.INFO if args.verbose else logging.WARNING,
                         format="%(message)s")
     run_id = uuid4().hex
@@ -59,6 +59,18 @@ def main() -> None:
     print(f"Duplicate IDs: {duplicate_ids}")
 
 
+def main(argv=None):
+    """Route explicit Day 10 commands while preserving earlier invocation forms."""
+    import sys
+    from data_toolkit.day10_cli import COMMANDS, main as command_main
+    arguments = list(sys.argv[1:] if argv is None else argv)
+    if arguments and (arguments[0] in COMMANDS
+                      or arguments[0] in {"-h", "--help"}):
+        return command_main(arguments)
+    _legacy_main(arguments)
+    return 0
+
+
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())
 

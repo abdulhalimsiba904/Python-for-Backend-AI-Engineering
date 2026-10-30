@@ -292,3 +292,54 @@ Validation reports rejected rows; transformation creates canonical copies;
 statistics summarize accepted records. Numeric strings, Boolean amounts,
 nonpositive/nonfinite amounts and later duplicate IDs are rejected.
 No new dependencies are required beyond the existing pytest development entry.
+
+
+## Day 10: CLI Design and Application Architecture
+
+From this toolkit folder in PowerShell, use a working Python 3.12+ interpreter:
+
+```powershell
+$env:PYTHONPATH = (Join-Path (Get-Location) 'src')
+python -m data_toolkit.cli --help
+python -m data_toolkit.cli convert --help
+python -m data_toolkit.cli validate samples/transactions.csv
+python -m data_toolkit.cli analyze samples/transactions.csv
+python -m data_toolkit.cli convert samples/transactions.csv --output output/transactions.json
+python -m data_toolkit.cli report samples/transactions.json --output output/report.txt
+$LASTEXITCODE
+```
+
+Use a new destination or intentionally add `--force` if output already exists.
+Expected sample summary: 3 transactions, total 225.0, average 75.0,
+minimum 50.0, maximum 100.0; food 2/175.0 and transport 1/50.0.
+See [DAY10_PRACTICAL.md](DAY10_PRACTICAL.md) for contracts, failure drills,
+architecture, output safety, test commands and interpreter troubleshooting.
+
+New subcommands use the strict Day 9 contract: positive finite numeric amounts,
+nonblank IDs/categories and no duplicate trimmed IDs. All rows must pass;
+no invalid rows are silently discarded. CSV amount strings are parsed at the
+file boundary; JSON numeric strings and Booleans are rejected. The adapter
+accepts historical `id` or canonical `transaction_id`; conflicting fields fail.
+Convert emits only `transaction_id`, `category`, `amount` in canonical JSON.
+Report accepts JSON or CSV and emits UTF-8 text, reusing earlier report helpers.
+
+`validate` and `analyze` print JSON to stdout. File-producing commands print a
+JSON acknowledgement only after successful publication. Expected errors go to
+stderr without tracebacks or raw transaction values. Paths may appear in file
+errors. Exit statuses: 0 success/help, 1 data/file/output failure, 2 usage error.
+Legacy direct-file/no-argument commands retain their original output, validation,
+logging and historical error status 2. Top-level help now lists the subcommands.
+
+```powershell
+python -m data_toolkit.cli validate samples/day10_invalid.csv
+# Exit 1: rows 2 and 3 are invalid.
+python -m data_toolkit.cli convert samples/transactions.csv
+# Exit 2: --output is required.
+python -m pytest tests/day10 -q
+python -m pytest -q
+python run_day5_tests.py
+```
+
+No environment is recreated by this feature. If `python` is unavailable or a
+venv points to a missing executable, invoke a verified Python with `& $py` and
+install development requirements only in an environment you intend to manage.
