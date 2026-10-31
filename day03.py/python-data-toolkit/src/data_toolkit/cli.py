@@ -64,6 +64,9 @@ def main(argv=None):
     import sys
     from data_toolkit.day10_cli import COMMANDS, main as command_main
     arguments = list(sys.argv[1:] if argv is None else argv)
+    if arguments and arguments[0] == "summarize":
+        from data_toolkit.day11_cli import main as summary_main
+        return summary_main(arguments[1:])
     if arguments and (arguments[0] in COMMANDS
                       or arguments[0] in {"-h", "--help"}):
         return command_main(arguments)

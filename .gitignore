@@ -23,3 +23,10 @@ day03.py/python-data-toolkit/DAY6_PRACTICAL_NOTES.md
 .pytest_cache/
 .coverage
 htmlcov/
+
+# Optional Day 11 local Python environment
+.venv-day11/
+
+# Private practical learning documents for all days
+**/PRACTICAL.md
+**/DAY*_PRACTICAL.md

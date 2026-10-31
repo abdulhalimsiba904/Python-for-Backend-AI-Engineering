@@ -1,0 +1,4 @@
+Quarterly Operations Report
+The team processed 120 support tickets this quarter.
+Average response time fell from 6 hours to 4 hours.
+The next review is scheduled for November.

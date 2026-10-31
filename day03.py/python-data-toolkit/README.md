@@ -343,3 +343,157 @@ python run_day5_tests.py
 No environment is recreated by this feature. If `python` is unavailable or a
 venv points to a missing executable, invoke a verified Python with `& $py` and
 install development requirements only in an environment you intend to manage.
+
+
+## Day 11 optional document summaries with GroqCloud
+
+The default provider is a deterministic offline mock. Setting a key never selects
+live mode automatically. Choose `--provider groq` explicitly to send document text
+to GroqCloud; no OpenAI API account or key is needed. The previous OpenAI adapter
+and its adapter tests remain as historical code to preserve the existing staged
+implementation. It is not a CLI choice and Groq does not import it.
+
+### Windows PowerShell and VS Code setup
+
+Open this repository in VS Code and select Terminal > New Terminal > PowerShell.
+Use a working Python 3.10+ interpreter. If the old root `.venv` points to a missing
+Python installation, create a separate ignored environment without deleting it:
+
+```powershell
+Set-Location 'C:\Users\USER\python-foundations\day03.py\python-data-toolkit'
+py -m venv .venv-day11
+& .\.venv-day11\Scripts\python.exe -m pip install -r requirements-dev.txt
+$toolkitPython = Join-Path $PWD '.venv-day11\Scripts\python.exe'
+$env:PYTHONPATH = (Join-Path $PWD 'src')
+```
+
+If `py` is unavailable, install a working Python with its Windows launcher or use
+the full path to an existing interpreter instead of `py`. Select the same
+interpreter in VS Code with Python: Select Interpreter. The Groq adapter uses the
+standard library, so there is no Groq SDK or new runtime package to install.
+
+Run the mock without a key, connection or API cost:
+
+```powershell
+& $toolkitPython -m data_toolkit.cli summarize samples/day11_operations.txt
+& $toolkitPython -m data_toolkit.cli summarize --help
+```
+
+Expected: exit 0 and a four-field JSON object with title
+`Quarterly Operations Report`, deterministic extractive summary/key points and
+`open_questions: []`. Input is nonblank UTF-8 text, at most 20000 characters;
+Word/PDF extraction is not included.
+
+### Configure Groq privately and deliberately opt into a live request
+
+Create a key in your [GroqCloud account](https://console.groq.com/keys).
+The key is read exclusively from `GROQ_API_KEY`; `.env` files are not loaded
+automatically. Enter it privately rather than putting a literal in command history:
+
+```powershell
+$groqKeyInput = Read-Host 'Groq API key (hidden)' -AsSecureString
+$env:GROQ_API_KEY = [System.Net.NetworkCredential]::new('', $groqKeyInput).Password
+Remove-Variable groqKeyInput
+```
+
+Never print, log, paste into chat or commit the key. Keep real keys out of source,
+frontend code, tests, docs and screenshots. Environment values are plaintext while
+in use; protect the terminal and machine. Existing `.env` and private-document
+ignore rules are unchanged. Ignoring a file does not remove an already tracked
+secret; revoke/rotate an exposed key at Groq.
+
+The default model is `openai/gpt-oss-20b`, listed as a Groq production model with
+strict structured-output support in the official documentation checked on
+31 October 2026. Here `openai/` identifies the model publisher: the endpoint is
+`https://api.groq.com/openai/v1/chat/completions` and requests go only to Groq.
+The model is a general text model suited to this small document-summary task.
+Optional `GROQ_MODEL` overrides the default; any replacement must support Groq Chat
+Completions with strict JSON Schema (for example `openai/gpt-oss-120b`). Verify
+current support and your account's model permissions before changing it.
+
+The following command sends text externally and may incur API charges. Run it only
+when you choose to make a live request; the implementation/tests do not need it:
+
+```powershell
+& $toolkitPython -m data_toolkit.cli summarize samples/day11_operations.txt --provider groq --timeout 15
+```
+
+The adapter makes one request, caps completion output at 2048 tokens, does not
+stream, disables redirects and never retries or switches models automatically.
+Check [current pricing/model availability](https://console.groq.com/docs/models),
+account limits, quota and [spend controls](https://console.groq.com/docs/spend-limits).
+Spend-limit availability depends on account tier and permissions; Groq documents
+a delay in spend tracking, so limits should not be treated as precise per-call caps.
+Do not assume free usage or unlimited credits. Input characters are not an exact
+token budget. Start with a small public sample and inspect usage afterward.
+A timed-out request may already have been processed; fallback cannot undo a charge.
+Submit only documents you are authorized to disclose under applicable provider policies.
+
+Clear the current session after use:
+
+```powershell
+Remove-Item Env:GROQ_API_KEY -ErrorAction SilentlyContinue
+Remove-Item Env:GROQ_MODEL -ErrorAction SilentlyContinue
+```
+
+### Validation, errors and explicit fallback
+
+The provider-independent `SummaryProvider` contract remains
+`summarize(document, timeout=...) -> JSON text`. The service parses the result and
+validates exactly `title`, `summary`, `key_points` and `open_questions`. Title and
+summary must be nonblank strings of at most 200 and 2000 characters respectively.
+Key points require 1–10 nonblank strings; open questions allow 0–10; every item is
+at most 500 characters. Valid JSON alone does not establish valid application data
+or factual accuracy. Strict provider output does not replace these checks or source review.
+
+`--timeout` defaults to 15 seconds and must be finite, greater than 0 and at most
+120. This bounds blocking socket operations, not a strict total elapsed deadline.
+Responses over 128000 bytes, malformed envelopes, refusals, truncated completions,
+invalid JSON and schema violations fail safely. Errors never display provider
+response bodies, credentials, headers or document text.
+
+| Failure | Action |
+|---|---|
+| Missing/invalid configuration | Set `GROQ_API_KEY` privately; check optional `GROQ_MODEL`. |
+| Authentication 401 | Check or rotate the key locally; do not blindly retry. |
+| Permission 403 / missing model 404 | Check project access and current model support. |
+| Rate limit 429 | Wait, reduce throughput and check quota/usage. |
+| Timeout / connection failure | Check connectivity; retry only by deliberate choice. |
+| 5xx / capacity failure | Service unavailable; try later or select offline fallback. |
+| Invalid/incomplete/refused AI response | Reject it; inspect offline tests or use fallback. |
+
+Default failure is exit 1 and safe stderr; invalid CLI usage is exit 2. To explicitly
+allow the mock on provider/response failure, add `--fallback`:
+
+```powershell
+& $toolkitPython -m data_toolkit.cli summarize samples/day11_operations.txt --provider groq --timeout 15 --fallback
+```
+
+On fallback, stdout still contains the four-field JSON and stderr clearly warns
+that offline mock output was used. Library callers get `used_fallback=True`.
+Input errors and invalid timeout settings still fail before a provider request.
+The mock remains deterministic; a real model is not guaranteed deterministic.
+
+### Tests with no internet, key or credits
+
+```powershell
+& $toolkitPython -m pytest -q tests/day11
+& $toolkitPython -m pytest -q
+```
+
+All Day 11 tests clear real provider configuration and block socket connections.
+Groq tests replace the HTTP boundary with local fake responses and nonfunctional
+test placeholders. They verify authentication/rate/service/timeout errors, bounded
+response handling, malformed/refused/truncated output, existing schema validation,
+CLI selection and explicit fallback without using credits. Earlier regression tests
+remain in the full suite. Live model/account compatibility is unverified until an
+explicitly approved live request is made.
+
+Official references: [Chat Completions API](https://console.groq.com/docs/api-reference),
+[structured outputs](https://console.groq.com/docs/structured-outputs), and
+[error codes](https://console.groq.com/docs/errors).
+
+Migration changes are deliberately **unstaged**. Previously staged Day 11 content
+remains in the index unchanged; a commit of the existing index alone would still
+contain the older provider selection. Review working-tree changes before deciding
+what to stage later. Private practical documents and `.gitignore` are preserved.
