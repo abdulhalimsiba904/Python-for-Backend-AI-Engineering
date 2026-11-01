@@ -34,3 +34,7 @@ htmlcov/
 # Local static-analysis caches
 .mypy_cache/
 .ruff_cache/
+
+# Python virtual environments
+.venv/
+.venv*/
