@@ -1,0 +1,9 @@
+Python Data Toolkit Report
+Count: 3
+Total: 225.00
+Average (2 decimals): 75.0
+Minimum: 50.0
+Maximum: 100.0
+Categories:
+  food: count=2, total=175.00
+  transport: count=1, total=50.00

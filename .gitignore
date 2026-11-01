@@ -30,3 +30,7 @@ htmlcov/
 # Private practical learning documents for all days
 **/PRACTICAL.md
 **/DAY*_PRACTICAL.md
+
+# Local static-analysis caches
+.mypy_cache/
+.ruff_cache/

@@ -1,0 +1,9 @@
+# Resolved test dependencies for Windows / Python 3.12, 2026-11-01.
+# Existing runtime requirements.txt remains empty. No credentials or local paths.
+# Version snapshot only; hashes are not supplied. Refresh deliberately and retest.
+colorama==0.4.6
+iniconfig==2.3.1
+packaging==26.3
+pluggy==1.7.0
+Pygments==2.21.0
+pytest==9.2.0

@@ -29,5 +29,7 @@ def read_csv(file_path: str | Path) -> list[dict[str, str]]:
 
         if reader.fieldnames is None:
             raise ValueError("CSV file is missing its header row.")
+        if len(reader.fieldnames) != len(set(reader.fieldnames)):
+            raise ValueError("CSV header contains duplicate field names.")
 
         return list(reader)
