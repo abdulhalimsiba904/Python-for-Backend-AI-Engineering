@@ -4,7 +4,7 @@ from types import SimpleNamespace
 from urllib.error import HTTPError, URLError
 import pytest
 
-from data_toolkit.summaries import (MockSummaryProvider, SummaryError, ProviderError,
+from data_toolkit.summaries import (SummaryError, ProviderError,
     ValidationError, summarize_document, validate_summary)
 from data_toolkit.day11_cli import main
 from data_toolkit.openai_summary import OpenAISummaryProvider

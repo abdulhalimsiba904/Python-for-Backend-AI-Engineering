@@ -5,7 +5,7 @@ from pathlib import Path
 import tempfile
 
 from data_toolkit.readers import read_csv, read_json
-from data_toolkit.reports import calculate_average, count_categories
+from data_toolkit.reports import calculate_average
 from data_toolkit.day09.validation import validate_transactions
 from data_toolkit.day09.transformation import transform_transactions
 from data_toolkit.day09.statistics import summarize_transactions
@@ -56,7 +56,6 @@ def render_report(records: list[dict]) -> str:
     """Pure text formatting using both Day 9 and earlier report functions."""
     records = transform_transactions(records)
     summary = summarize_transactions(records)
-    counts = count_categories(records)
     average = calculate_average([row["amount"] for row in records])
     lines = ["Python Data Toolkit Report", f"Count: {summary['count']}",
              f"Total: {summary['total']:.2f}",
@@ -64,7 +63,7 @@ def render_report(records: list[dict]) -> str:
              f"Minimum: {summary['minimum']}", f"Maximum: {summary['maximum']}",
              "Categories:"]
     for category, values in summary["by_category"].items():
-        lines.append(f"  {category}: count={counts[category]}, total={values['total']:.2f}")
+        lines.append(f"  {category}: count={values['count']}, total={values['total']:.2f}")
     return "\n".join(lines) + "\n"
 
 

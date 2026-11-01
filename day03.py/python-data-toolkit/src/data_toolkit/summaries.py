@@ -113,7 +113,8 @@ def summarize_document(document: str, provider: SummaryProvider | None = None,
             return SummaryResult(validate_summary(json.loads(raw)), used_fallback=True)
         message = 'Summary failed: service unavailable or output invalid.'
         if isinstance(error, ProviderError):
-            message = PROVIDER_FAILURE_MESSAGES.get(error.code, message)
+            if error.code is not None:
+                message = PROVIDER_FAILURE_MESSAGES.get(error.code, message)
         elif isinstance(error, (ValidationError, json.JSONDecodeError, RecursionError)):
             message = 'Summary failed: provider returned invalid summary data.'
         raise SummaryError(message) from None

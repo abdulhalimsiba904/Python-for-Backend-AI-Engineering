@@ -497,3 +497,70 @@ Migration changes are deliberately **unstaged**. Previously staged Day 11 conten
 remains in the index unchanged; a commit of the existing index alone would still
 contain the older provider selection. Review working-tree changes before deciding
 what to stage later. Private practical documents and `.gitignore` are preserved.
+
+## Day 12 integration testing, refactoring and code quality
+
+Day 12 adds eight standard-library `unittest` integration tests in
+`tests/day12/test_reporting_workflow.py`. They run the public CLI against disposable
+files using `TemporaryDirectory` and manually checked amounts. The successful
+fixture has amounts 10.25, 20.75, 9 and 40: total 80, average 20, and two records in
+each normalized category. Tests check report contents, source preservation,
+validation errors, duplicate IDs, explicit overwrite permission, same-input/output
+protection, empty data and rounding. No API keys or live network calls are required.
+
+The report now reuses category counts from the statistics result instead of
+recounting them. It retains the earlier average helper and formatting so observable
+behavior remains unchanged. Small annotations and Optional-value narrowing address
+existing type-check findings without introducing a new layer or runtime dependency.
+
+### Run the checks
+
+From the toolkit folder, use your selected development interpreter. The pytest
+configuration collects both pytest and unittest tests; using unittest alone does
+not execute the complete earlier-day suite.
+
+```powershell
+$env:PYTHONPATH = (Join-Path $PWD 'src')
+python -m unittest discover -s tests/day12 -p 'test_*.py' -v
+python -m pytest -q tests/day12
+python -m pytest -q tests/day11
+python -m pytest -q
+```
+
+Ruff and mypy are optional development tools. To evaluate them in a project-local
+environment without changing global Python or production dependencies:
+
+```powershell
+py -3.12 -m venv .venv
+& .\.venv\Scripts\python.exe -m pip install -r requirements-dev.txt ruff mypy
+& .\.venv\Scripts\python.exe -m ruff check --no-cache --select E4,E7,E9,F src tests day07_assessment test_toolkit.py
+& .\.venv\Scripts\python.exe -m mypy --check-untyped-defs --no-incremental src
+```
+
+Only create that environment if `.venv` does not already exist; otherwise select an
+existing working interpreter. Ruff checks the stated correctness rules, not every
+possible style rule. Mypy checks function bodies but this is not a strict full-type
+coverage claim. Neither tool replaces executing the application tests.
+
+### Learning guide and verification status
+
+A unit test checks a small function in isolation. An integration test checks that
+real modules, CLI argument handling and file operations work together. Regression
+testing reruns earlier tests after changes. Refactoring changes internal structure
+without changing externally visible behavior; the new tests protect that boundary.
+Static analysis inspects code without executing business workflows and can detect
+unused imports and incompatible or Optional types earlier.
+
+The isolated Day 12 run passed all 8 new integration tests, all 105 Day 11 tests,
+Ruff's selected rules and mypy across 18 source files. Its full suite reported
+322 passed, 1 failed and 14 passing subtests, with no skips. The same Day 10
+default-export test failed in the unchanged baseline because the Windows sandbox
+denies hard-link creation. The exporter was not weakened, mocked or skipped to hide
+that restriction. The successful new fixture exercises the explicitly permitted
+`--force`/replace path; default no-overwrite publication remains covered by Day 10.
+
+**Full regression verification is incomplete** until this existing test passes in
+a normal local environment with hard-link support. See
+[DAY12_QUALITY_REPORT.md](DAY12_QUALITY_REPORT.md) for architecture, exact commands,
+counts, static-analysis scope and review instructions. No Day 12 commit or push has
+been made; the GitHub feature branch currently still points to the Day 11 commit.

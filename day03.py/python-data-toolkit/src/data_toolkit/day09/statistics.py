@@ -20,7 +20,7 @@ def summarize_transactions(records: list) -> dict:
     """
     clean = transform_transactions(records)
     amounts = [record["amount"] for record in clean]
-    groups = {}
+    groups: dict[str, list[float]] = {}
     for record in clean:
         groups.setdefault(record["category"], []).append(record["amount"])
     total = _total(amounts)
